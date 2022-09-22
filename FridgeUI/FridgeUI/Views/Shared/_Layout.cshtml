@@ -1,4 +1,23 @@
-﻿<!DOCTYPE html>
+﻿@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@{
+    var token = this.Context.Request.Cookies["JWT"];
+    string userName = null;
+    IEnumerable<string> roles = null;
+
+    if (token != null)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(token);
+
+        userName = jwtSecurityToken.Claims.Where(i => i.Type == ClaimTypes.Name).Select(j => j.Value).First();
+        roles = jwtSecurityToken.Claims.Where(i => i.Type == ClaimTypes.Role).Select(j => j.Value).ToList();
+
+        this.Context.Response.Cookies.Append("JWT", token);
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -17,13 +36,30 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                    @if (roles != null)
+                    {
+                        <ul class="nav navbar-nav">
+                            @if (roles.Where(i => i == UserRoles.User).FirstOrDefault() != null)
+                            {
+                                <li class="nav-item">@Html.ActionLink("Fridges", "GetFridges", "Fridge", null, new { @class = "nav-link" })</li>
+                            }
+                            @if (roles.Where(i => i == UserRoles.Administrator).FirstOrDefault() != null)
+                            {
+                            }
+                        </ul>
+                    }
+                </div>
+                <div>
+                    <ul class="nav navbar-nav flex-grow-1">
+                        @if (string.IsNullOrEmpty(this.Context.Request.Headers.Authorization))
+                        {
+                            <li class="nav-item">@Html.ActionLink("Create account", "Create", "Account", null, new { @class = "nav-link" })</li>
+                            <li class="nav-item">@Html.ActionLink("Log in", "Login", "Account", null, new { @class = "nav-link" })</li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">@Html.ActionLink(@userName, "Index", "Account", null, new { @class = "nav-link" })</li>
+                        }
                     </ul>
                 </div>
             </div>

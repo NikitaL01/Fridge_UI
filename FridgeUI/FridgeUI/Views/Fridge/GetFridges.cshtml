@@ -1,0 +1,34 @@
+﻿@using FridgeUI.Models.DataTransferObjects
+@model List<FridgeDto>
+
+@{
+    ViewData["Title"] = "My fridges";
+}
+
+<h2>@ViewBag.Title</h2>
+<table class="table table-striped">
+    <thead class="bg-dark text-white">
+        <tr>
+            <th>Name</th>
+            <th>Owner Name</th>
+        </tr>
+    </thead>
+    @if (Model != null && Model.Count() != 0)
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <th>@item.Name</th>
+                <th>@item.OwnerName</th>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="6" class="text-center">No fridges</td>
+        </tr>
+    }
+</table>
+<br />
+@Html.ActionLink("Back", "Index", "Home", null, new { @class = "btn btn-outline-secondary" })

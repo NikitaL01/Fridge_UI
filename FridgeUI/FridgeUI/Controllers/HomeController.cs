@@ -1,6 +1,8 @@
-﻿using FridgeUI.Models;
+﻿using FridgeUI.Interfaces;
+using FridgeUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RestEase;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

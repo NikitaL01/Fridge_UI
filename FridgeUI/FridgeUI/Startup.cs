@@ -1,9 +1,11 @@
+using FridgeUI.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RestEase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,10 @@ namespace FridgeUI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.ConfigureSlqContext(Configuration);
+            services.ConfigureIdentity();
+            services.ConfigureJwt(Configuration);
+            services.ConfigureCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,7 +49,21 @@ namespace FridgeUI
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseCors();
 
+            app.Use(async (context, next) =>
+            {
+                var token = context.Request.Cookies["JWT"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Request.Headers.Add("Authorization", "Bearer " + token);
+                    context.Response.Cookies.Append("JWT", token);
+                }
+
+                await next();
+            });
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
